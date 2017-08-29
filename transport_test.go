@@ -3375,14 +3375,18 @@ func TestTransportNoBodyMeansNoDATA(t *testing.T) {
 }
 
 func TestGetClientConnInfo(t *testing.T) {
-	time := time.Now()
+	firstActive := time.Now().Add(-1 * time.Hour)
+	lastActive := time.Now()
+
 	cc := &ClientConn{}
-	cc.lastActive = time
+	cc.firstActive = firstActive
+	cc.lastActive = lastActive
 	cc.maxConcurrentStreams = 10
 	cc.streams = make(map[uint32]*clientStream)
 	cc.streams[1] = &clientStream{}
 	cc.streams[2] = &clientStream{}
 	cc.pendingRequests = 20
+
 	info := cc.GetClientConnInfo()
 
 	if info.MaxConcurrentRequests != 10 {
@@ -3394,7 +3398,10 @@ func TestGetClientConnInfo(t *testing.T) {
 	if info.PendingRequests != 20 {
 		t.Errorf("PendingRequests got %v; want 20", info.PendingRequests)
 	}
-	if info.LastActive != time {
-		t.Errorf("LastActive got %v; want %v", info.LastActive, time)
+	if info.FirstActive != firstActive {
+		t.Errorf("FirstActive got %v; want %v", info.FirstActive, firstActive)
+	}
+	if info.LastActive != lastActive {
+		t.Errorf("LastActive got %v; want %v", info.LastActive, lastActive)
 	}
 }

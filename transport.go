@@ -170,6 +170,7 @@ type ClientConn struct {
 	bw              *bufio.Writer
 	br              *bufio.Reader
 	fr              *Framer
+	firstActive     time.Time
 	lastActive      time.Time
 	// Settings from peer: (also guarded by mu)
 	maxFrameSize         uint32
@@ -530,6 +531,7 @@ func (t *Transport) newClientConn(c net.Conn, singleUse bool) (*ClientConn, erro
 		singleUse:            singleUse,
 		wantSettingsAck:      true,
 		pings:                make(map[[8]byte]chan struct{}),
+		firstActive:          time.Now(),
 	}
 	if d := t.idleConnTimeout(); d != 0 {
 		cc.idleTimeout = d
@@ -609,6 +611,7 @@ type clientConnInfo struct {
 	MaxConcurrentRequests uint32
 	CurrentRequests       int
 	PendingRequests       int
+	FirstActive           time.Time
 	LastActive            time.Time
 }
 
@@ -625,6 +628,7 @@ func (cc *ClientConn) getClientConnInfoLocked() *clientConnInfo {
 		MaxConcurrentRequests: cc.maxConcurrentStreams,
 		CurrentRequests:       len(cc.streams),
 		PendingRequests:       cc.pendingRequests,
+		FirstActive:           cc.firstActive,
 		LastActive:            cc.lastActive,
 	}
 }
