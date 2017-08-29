@@ -605,6 +605,30 @@ func (cc *ClientConn) setGoAway(f *GoAwayFrame) {
 	}
 }
 
+type clientConnInfo struct {
+	MaxConcurrentRequests uint32
+	CurrentRequests       int
+	PendingRequests       int
+	LastActive            time.Time
+}
+
+// GetClientConnInfo returns information about the current requests, pending
+// requests and maximum possible requests for this connection
+func (cc *ClientConn) GetClientConnInfo() *clientConnInfo {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
+	return cc.getClientConnInfoLocked()
+}
+
+func (cc *ClientConn) getClientConnInfoLocked() *clientConnInfo {
+	return &clientConnInfo{
+		MaxConcurrentRequests: cc.maxConcurrentStreams,
+		CurrentRequests:       len(cc.streams),
+		PendingRequests:       cc.pendingRequests,
+		LastActive:            cc.lastActive,
+	}
+}
+
 // CanTakeNewRequest reports whether the connection can take a new request,
 // meaning it has not been closed or received or sent a GOAWAY.
 func (cc *ClientConn) CanTakeNewRequest() bool {
