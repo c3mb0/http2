@@ -22,7 +22,7 @@ type ClientConnPool interface {
 // implementations which can close their idle connections.
 type clientConnPoolIdleCloser interface {
 	ClientConnPool
-	closeIdleConnections()
+	CloseIdleConnections()
 }
 
 var (
@@ -215,7 +215,7 @@ func (p *clientConnPool) MarkDead(cc *ClientConn) {
 	delete(p.keys, cc)
 }
 
-func (p *clientConnPool) closeIdleConnections() {
+func (p *clientConnPool) CloseIdleConnections() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	// TODO: don't close a cc if it was just added to the pool
@@ -226,7 +226,7 @@ func (p *clientConnPool) closeIdleConnections() {
 	// break some caller's RoundTrip.
 	for _, vv := range p.conns {
 		for _, cc := range vv {
-			cc.closeIfIdle()
+			cc.CloseIfIdle()
 		}
 	}
 }

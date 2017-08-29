@@ -384,7 +384,7 @@ func (t *Transport) RoundTripOpt(req *http.Request, opt RoundTripOpt) (*http.Res
 // It does not interrupt any connections currently in use.
 func (t *Transport) CloseIdleConnections() {
 	if cp, ok := t.connPool().(clientConnPoolIdleCloser); ok {
-		cp.closeIdleConnections()
+		cp.CloseIdleConnections()
 	}
 }
 
@@ -652,14 +652,14 @@ func (cc *ClientConn) canTakeNewRequestLocked() bool {
 // onIdleTimeout is called from a time.AfterFunc goroutine. It will
 // only be called when we're idle, but because we're coming from a new
 // goroutine, there could be a new request coming in at the same time,
-// so this simply calls the synchronized closeIfIdle to shut down this
-// connection. The timer could just call closeIfIdle, but this is more
+// so this simply calls the synchronized CloseIfIdle to shut down this
+// connection. The timer could just call CloseIfIdle, but this is more
 // clear.
 func (cc *ClientConn) onIdleTimeout() {
-	cc.closeIfIdle()
+	cc.CloseIfIdle()
 }
 
-func (cc *ClientConn) closeIfIdle() {
+func (cc *ClientConn) CloseIfIdle() {
 	cc.mu.Lock()
 	if len(cc.streams) > 0 {
 		cc.mu.Unlock()
@@ -1514,7 +1514,7 @@ func (rl *clientConnReadLoop) run() error {
 			return err
 		}
 		if rl.closeWhenIdle && gotReply && maybeIdle && len(rl.activeRes) == 0 {
-			cc.closeIfIdle()
+			cc.CloseIfIdle()
 		}
 	}
 }
