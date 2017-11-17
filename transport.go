@@ -104,7 +104,7 @@ type Transport struct {
 	connPoolOrDef ClientConnPool // non-nil version of ConnPool
 
 	// Cancellable context function to stop all ongoing pinging
-	cancelFn      context.CancelFunc
+	cancelFn context.CancelFunc
 }
 
 // CeasePinging stops all ongoing pinging operations that keep
@@ -1956,7 +1956,7 @@ func (rl *clientConnReadLoop) processSettings(f *SettingsFrame) error {
 		case SettingMaxConcurrentStreams:
 			// Do not fill the connection's entire
 			// multiplexing limit to be on the safe side
-			cc.maxConcurrentStreams = s.Val - (s.Val/10)
+			cc.maxConcurrentStreams = s.Val - (s.Val / 100)
 		case SettingInitialWindowSize:
 			// Values above the maximum flow-control
 			// window size of 2^31-1 MUST be treated as a
